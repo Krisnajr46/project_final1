@@ -1,29 +1,29 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Todo Cloud App</title>
-<link rel="stylesheet" href="style.css">
-</head><body>
-<h1>☁️ Todo Cloud App</h1>
-<form id="f"><input id="t" placeholder="Tugas baru..." maxlength="200" required><button>Tambah</button></form>
-<ul id="l"></ul>
-<script>
-const l=document.getElementById('l');
-const api=(p,o)=>fetch('/api'+p,{headers:{'Content-Type':'application/json'},...o});
-async function load(){
-  const r=await (await api('/todos')).json();
-  l.replaceChildren(...r.map(t=>{
-    const li=document.createElement('li'); if(t.done) li.className='done';
-    const s=document.createElement('span'); s.textContent=t.title; s.style.cursor='pointer';
-    s.onclick=async()=>{await api('/todos/'+t.id,{method:'PATCH'});load()};
-    const b=document.createElement('button'); b.textContent='✕';
-    b.onclick=async()=>{await api('/todos/'+t.id,{method:'DELETE'});load()};
-    li.append(s,b); return li;
-  }));
-}
-document.getElementById('f').onsubmit=async e=>{
-  e.preventDefault(); const i=document.getElementById('t');
-  await api('/todos',{method:'POST',body:JSON.stringify({title:i.value})}); i.value=''; load();
-};
-load();
-</script></body></html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Todo Cloud App</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="theme.css"> <!-- opsional -->
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>☁️ Todo Cloud App</h1>
+    </header>
+    <main>
+      <form id="f">
+        <input id="t" placeholder="Tugas baru..." maxlength="200" required>
+        <button>Tambah</button>
+      </form>
+      <ul id="l"></ul>
+    </main>
+    <footer>
+      <p>© 2026 Todo Cloud App</p>
+    </footer>
+  </div>
+  <script src="components.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
