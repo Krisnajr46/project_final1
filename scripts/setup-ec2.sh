@@ -9,16 +9,12 @@ if ! swapon --show | grep -q swapfile; then
   echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 fi
 
-# 2) Docker + compose plugin
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker "$USER"
-
-# 3) Firewall host + fail2ban (proteksi brute-force SSH)
+# 2) Firewall host + fail2ban (proteksi brute-force SSH)
 sudo apt-get install -y fail2ban ufw
 sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 3000/tcp
 sudo ufw --force enable
 
-# 4) Folder + .env (secret dibuat di server, TIDAK di git)
+# 3) Folder + .env (secret dibuat di server, TIDAK di git)
 mkdir -p ~/app && cd ~/app
 if [ ! -f .env ]; then
   cat > .env <<ENV
@@ -29,3 +25,4 @@ ENV
 fi
 echo "Selesai. LOGOUT lalu LOGIN lagi agar group docker aktif."
 echo "Password Grafana: $(grep GRAFANA_PASSWORD ~/app/.env)"
+
