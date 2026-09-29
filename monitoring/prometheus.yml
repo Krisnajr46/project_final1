@@ -1,0 +1,9 @@
+global: { scrape_interval: 15s }
+scrape_configs:
+  - job_name: backend
+    dns_sd_configs:                 # otomatis menemukan semua replika saat scaling
+      - names: [backend]
+        type: A
+        port: 3000
+  - job_name: node
+    static_configs: [{ targets: ['node-exporter:9100'] }]
