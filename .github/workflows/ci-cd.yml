@@ -1,0 +1,72 @@
+name: CI/CD
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}-backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+      - name: Security audit (dependencies)
+        run: npm audit --omit=dev --audit-level=high
+        working-directory: backend
+
+  build:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "image=$(echo $IMAGE | tr '[:upper:]' '[:lower:]'):${{ github.sha }}" >> $GITHUB_OUTPUT
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: docker/build-push-action@v6
+        with: { context: backend, push: true, tags: "${{ steps.meta.outputs.image }}" }
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy config ke EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml,nginx,frontend,monitoring"
+          target: "~/app"
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          IMG: ${{ needs.build.outputs.image }}
+          GH_USER: ${{ github.actor }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: IMG,GH_USER,GH_TOKEN
+          script: |
+            cd ~/app
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
+            sed -i '/^BACKEND_IMAGE=/d' .env && echo "BACKEND_IMAGE=$IMG" >> .env
+            docker compose pull backend
+            docker compose up -d --remove-orphans
+            docker image prune -f
+            sleep 8 && curl -fs http://localhost/api/health
