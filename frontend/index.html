@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Todo Cloud App</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:480px;margin:40px auto;padding:0 16px;color:#222}
+form{display:flex;gap:8px}input{flex:1;padding:8px}button{padding:8px 12px;cursor:pointer}
+li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;list-style:none}
+.done span{text-decoration:line-through;color:#999}ul{padding:0}
+</style></head><body>
+<h1>☁️ Todo Cloud App</h1>
+<form id="f"><input id="t" placeholder="Tugas baru..." maxlength="200" required><button>Tambah</button></form>
+<ul id="l"></ul>
+<script>
+const l=document.getElementById('l');
+const api=(p,o)=>fetch('/api'+p,{headers:{'Content-Type':'application/json'},...o});
+async function load(){
+  const r=await (await api('/todos')).json();
+  l.replaceChildren(...r.map(t=>{
+    const li=document.createElement('li'); if(t.done) li.className='done';
+    const s=document.createElement('span'); s.textContent=t.title; s.style.cursor='pointer';
+    s.onclick=async()=>{await api('/todos/'+t.id,{method:'PATCH'});load()};
+    const b=document.createElement('button'); b.textContent='✕';
+    b.onclick=async()=>{await api('/todos/'+t.id,{method:'DELETE'});load()};
+    li.append(s,b); return li;
+  }));
+}
+document.getElementById('f').onsubmit=async e=>{
+  e.preventDefault(); const i=document.getElementById('t');
+  await api('/todos',{method:'POST',body:JSON.stringify({title:i.value})}); i.value=''; load();
+};
+load();
+</script></body></html>
