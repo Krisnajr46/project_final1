@@ -1,5 +1,11 @@
 const l = document.getElementById('l');
-const api = (p,o)=>fetch('/api'+p,{headers:{'Content-Type':'application/json'},...o});
+const api = (p,o)=>fetch('/api'+p,{
+  headers:{
+    'Content-Type':'application/json',
+    'Authorization':'Bearer ' + localStorage.getItem('token') // tambahkan ini
+  },
+  ...o
+});
 
 async function load(){
   const r = await (await api('/todos')).json();
