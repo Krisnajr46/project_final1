@@ -17,6 +17,8 @@
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Signup</button>
       </form>
+      <p>Sudah punya akun? <a href="login.html">Login di sini</a></p>
+      <p><a href="index.html">← Kembali ke Todo</a></p>
     </main>
   </div>
 
@@ -35,9 +37,9 @@
       const data = await res.json();
       if (res.ok) {
         alert('Signup berhasil! Silakan login.');
-        window.location.href = 'login.html'; // redirect ke halaman login
+        window.location.href = 'login.html';
       } else {
-        alert('Signup gagal: ' + data.error);
+        alert('Signup gagal: ' + (data.error || 'Terjadi kesalahan'));
       }
     });
   </script>
