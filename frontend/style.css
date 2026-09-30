@@ -70,3 +70,33 @@ li:hover {
   text-decoration: line-through;
   color: #999;
 }
+
+nav {
+  text-align: right;
+  margin-top: 12px;
+}
+
+nav .btn {
+  display: inline-block;
+  padding: 8px 18px;
+  margin-left: 8px;
+  border-radius: 6px;
+  background: #4a90e2; /* biru elegan */
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+nav .btn:hover {
+  background: #357ABD;
+  transform: translateY(-2px);
+}
+
+nav .btn-alt {
+  background: #50c878; /* hijau untuk signup */
+}
+
+nav .btn-alt:hover {
+  background: #3da766;
+}
